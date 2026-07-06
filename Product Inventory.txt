@@ -1,0 +1,13 @@
+Product Inventory
+
+Product: Laptop
+Quantity: 25
+Price: 65000
+
+Product: Mouse
+Quantity: 120
+Price: 750
+
+Product: Keyboard
+Quantity: 80
+Price: 1500
