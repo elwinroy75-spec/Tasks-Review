@@ -67,10 +67,7 @@ async function scrapeAllIssuanceTypes(page, issuanceTypes) {
 }
 
 function displayResults(allUrls) {
-  for (const [issuanceType, urls] of Object.entries(allUrls)) {
-    console.log(`\n${issuanceType}:`);
-    console.log(urls);
-  }
+  console.log(allUrls);
 }
 
 async function scrapeData() {
