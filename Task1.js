@@ -26,7 +26,7 @@ async function getAllProducts() {
 
     if (allProducts.length >= total) break;
 
-    await wait(300); // 👈 prevents API limit error
+    await wait(300);
   }
 
   return allProducts;
