@@ -7,7 +7,7 @@ const wait     = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // Phase 1: Open the browser and load the page 
 async function openPage() {
-  const browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.launch({ headless: true });
   const page    = await browser.newPage();
   await page.goto(PAGE_URL, { waitUntil: "networkidle2", timeout: 90000 });
   console.log("Page loaded.");
@@ -30,11 +30,11 @@ async function expandYears(page) {
   console.log("Year groups expanded.");
 }
 
-// Phase 3: Collect all event sub-groups for each target years 
+// ── Phase 3: Collect all event sub-groups for each target years 
 async function getEventGroups(page) {
   const groups = await page.evaluate((years) => {
 
-    // map "webpart-yearIndex" 
+    // Step A: map "webpart-yearIndex" → year  e.g. "8-1" → "2026"
     const yearMap = {};
     document.querySelectorAll("tbody td.ms-gb").forEach((td) => {
       const id = td.closest("tbody")?.id || "";
@@ -43,7 +43,7 @@ async function getEventGroups(page) {
       if (yr && ix && years.includes(yr)) yearMap[`${ix[1]}-${ix[2]}`] = yr;
     });
 
-    // collect every event sub-group whose parent year is in yearMap
+    // Step B: collect every event sub-group whose parent year is in yearMap
     const groups = [];
     document.querySelectorAll("tbody td.ms-gb2").forEach((td) => {
       const id = td.closest("tbody")?.id || "";
@@ -107,7 +107,7 @@ async function collectLinks(page, groups) {
 // Phase 5: Save results to JSON 
 function saveResults(records) {
   fs.writeFileSync("ins_events.json", JSON.stringify(records, null, 2));
-  console.log(`\nSaved records to ins_events.json`);
+  console.log(`\nSaved ${records.length} records → ins_events.json`);
 }
 
 // main function

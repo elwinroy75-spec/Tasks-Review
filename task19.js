@@ -9,6 +9,7 @@ async function scrapeSections() {
   const $ = cheerio.load(html);
 
   const allHeadings = $("h2").toArray();
+  //console.log(allHeadings.map((el, i) => `${i}: ${$(el).text().trim()}`));
   const Title = $("table a[href^='#']").first().text().trim();
 
   const startIndex = allHeadings.findIndex((el) => $(el).text().trim() === Title);

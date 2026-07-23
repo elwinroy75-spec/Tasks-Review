@@ -19,14 +19,14 @@ async function scrapeBulletin() {
 
   $("body").children().each((_, el) => {
     const $el = $(el);
-    const tag = el.tagName.toLowerCase();
+    const tag = el.tagName;
 
     if (tag === "h3" && $el.find("a[name]").length) {
-      save();
+      //save();
       chapter = clean($el.text()).replace(/^[A-Z]\.\s*/, "");
       result[chapter] ??= {};
     } else if (tag === "h4" && NoticeAnchor($el.next("p").find("a[name]").attr("name"))) {
-      save();
+      //save();
       section = clean($el.text());
       result[chapter][section] ??= [];
     } else if (tag === "p" && NoticeAnchor($el.find("a[name]").attr("name"))) {
@@ -37,7 +37,7 @@ async function scrapeBulletin() {
       if (text) notice.parts.push(text);
     }
   });
-  save();
+  //save();
 
   return result;
 }
