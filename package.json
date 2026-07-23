@@ -1,0 +1,22 @@
+{
+  "name": "nodedemo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "amqp": "^0.2.7",
+    "amqplib": "^2.0.1",
+    "axios": "^1.18.1",
+    "cheerio": "^1.2.0",
+    "express": "^5.2.1",
+    "get-folder-size": "^5.0.0",
+    "puppeteer": "^25.2.1",
+    "redis": "^6.1.0"
+  }
+}

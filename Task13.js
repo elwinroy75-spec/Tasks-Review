@@ -7,16 +7,17 @@ const TARGET = 250;
 const wait   = (ms) => new Promise(r => setTimeout(r, ms));
 
 // Phase 1: Launch browser and navigate to page
-async function launchAndNavigate() {
+async function launchPage() {
   const browser = await puppeteer.launch({ headless: true });
   const page    = await browser.newPage();
   await page.goto(URL, { waitUntil: "networkidle2", timeout: 60000 });
   console.log("Page loaded.");
   return { browser, page };
+
 }
 
 // Phase 2: Scroll until TARGET items are loaded
-async function scrollUntilLoaded(page) {
+async function scrollPage(page) {
   let prevCount = 0, stalls = 0;
 
   while (true) {
@@ -44,14 +45,14 @@ async function scrollUntilLoaded(page) {
 }
 
 // Phase 3: Extract HTML content and close browser
-async function extractAndClose(browser, page) {
+async function extractPage(browser, page) {
   const html = await page.content();
   await browser.close();
   return html;
 }
 
 // Phase 4: Parse circulars from raw HTML
-function parseCirculars(html) {
+function parseData(html) {
   const $       = cheerio.load(html);
   const results = [];
 
@@ -85,16 +86,13 @@ function saveResults(records, outputPath = "hkex_circulars.json") {
   fs.writeFileSync(outputPath, JSON.stringify(records, null, 2));
   console.log(`\nSaved ${records.length} records to ${outputPath}`);
 
-  records.slice(0, 3).forEach((r, i) =>
-    console.log(`[${i + 1}] ${r.date} | ${r.departmentCode} | ${r.linkText.slice(0, 60)}`)
-  );
 }
 
 // main function
 (async () => {
-  const { browser, page } = await launchAndNavigate();  
-  await scrollUntilLoaded(page);                        
-  const html    = await extractAndClose(browser, page); 
-  const records = parseCirculars(html);                 
+  const { browser, page } = await launchPage();  
+  await scrollPage(page);                        
+  const html    = await extractPage(browser, page); 
+  const records = parseData(html);                 
   saveResults(records);                                 
 })();
