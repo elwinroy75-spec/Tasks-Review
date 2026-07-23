@@ -1,49 +1,82 @@
-// const fs = require('fs');
+const axios = require("axios");
+const fs = require("fs");
 
-// // read data from JSON file
-// const data = fs.readFileSync("products-catalog.json","utf-8");
-// const prodData = JSON.parse(data);
-// console.log(prodData);
+const limit = 30;
 
-// // write and storing data in another .txt file in json format
-// const newData = [];
+// Task 1: Fetch all products
+async function fetchAllProducts() {
+  let skip = 0;
+  let allProducts = [];
+  let total = 0;
 
-// for (const product of prodData) {
-//     newData.push(product);
-// }
+  while (true) {
+    const res = await axios.get(
+      `https://dummyjson.com/products?limit=${limit}&skip=${skip}`
+    );
 
-// fs.writeFileSync("output.txt", JSON.stringify(newData, null, 2));
+    const data = res.data;
 
-const fs = require('fs');
+    allProducts.push(...data.products);
+    total = data.total;
 
-// 1. Read and parse the source JSON file
-const data = fs.readFileSync("products-catalog.json", "utf-8");
-const prodData = JSON.parse(data);
+    skip += limit;
 
-// 2. Clear or initialize the output file as empty
-const outputFile = "output.txt";
-fs.writeFileSync(outputFile, "");
-
-// 3. Loop through and write each product
-prodData.forEach((product) => {
-    fs.appendFileSync(outputFile, JSON.stringify(product) + "\n");
-});
-
-console.log("File written successfully!");
-
-// 4. Read back the file, parse it, and put it into an array
-const finalOutput = fs.readFileSync(outputFile, "utf-8");
-const jsonData = finalOutput.split('\n');
-
-const arr = [];
-jsonData.forEach((line) => {
-    if (line) { 
-        arr.push(JSON.parse(line));
+    if (allProducts.length >= total) {
+      break;
     }
-});
+  }
 
-console.log(arr);
+  return allProducts;
+}
 
+// Task 2: Keep only required fields
+function filterProducts(products) {
+  return products.map((product) => ({
+    id: product.id,
+    title: product.title,
+    category: product.category,
+    price: product.price,
+    rating: product.rating,
+  }));
+}
 
+// Task 3: Rename fields
+function renameFields(products) {
+  return products.map((product) => ({
+    productId: product.id,
+    name: product.title,
+    category: product.category,
+    price: product.price,
+    rating: product.rating,
+  }));
+}
 
+// Task 4: Sort by product name
+function sortProducts(products) {
+  return products.sort((a, b) => a.name.localeCompare(b.name));
+}
 
+// Task 5: Save output to JSON file
+function saveToFile(products) {
+  fs.writeFileSync(
+    "products.json",
+    JSON.stringify(products, null, 2),
+    "utf8"
+  );
+}
+
+async function main() {
+    
+  const products = await fetchAllProducts();
+
+  const filteredProducts = filterProducts(products);
+
+  const renamedProducts = renameFields(filteredProducts);
+
+  const sortedProducts = sortProducts(renamedProducts);
+
+  saveToFile(sortedProducts);
+
+  console.log("Products saved successfully.");
+}
+main().catch(console.error);

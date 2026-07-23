@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>A2X News</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css">
+  <link href="/news/static/css/all.css" rel="stylesheet">
+  <style type="text/css">
+    pre{
+      /*font-family: 'Helvetica', 'Arial', sans-serif;*/
+      font-family: "Lucida Console", "Courier New", monospace;
+    }
+    .pointer {cursor: pointer;}
+  </style>
+</head>
+<body>
+  <div id="header-image">
+    <img src="/news/static/images/a2x-news-header3.png" style="height: 70px;">
+  </div>
+  <a href="#" class="btn btn-primary float-end" id="btnFilterClear">Clear Filter</a>
+  <ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item">
+      <a class="nav-link active text-dark pointer" id="issuer-notices-tab" data-bs-toggle="tab" data-bs-target="#issuer-notices" role="tab" aria-controls="issuer-notices" aria-selected="true">Issuer Notices</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link text-dark pointer" id="market-notices-tab" data-bs-toggle="tab" data-bs-target="#market-notices" role="tab" aria-controls="market-notices">Market Notices</a>
+    </li>
+  </ul>
+  <div class="tab-content" id="news-tabs">
+    <div class="tab-pane fade show active" id="issuer-notices" role="tabpanel" aria-labelledby="issuer-notices-tab">
+      <div class="container-fluid">
+        <div class="table-responsive">
+          <table class="table table-striped table-hover table-bordered table-sm display nowrap" id="NewsMsgTbl" style="width: 100%;">
+            <thead class="table-dark">
+              <tr>
+                <th data-priority="1" class="header-row" header-text=""></th>
+                <th data-priority="4" class="header-row" header-text="Time Published">Time Published</th>
+                <th data-priority="2" class="header-row" header-text="Security Code">Security Code</th>
+                <th data-priority="3" class="header-row" header-text="Title">Title</th>
+                <th data-priority="5" class="header-row" header-text="Security Name">Security Name</th>
+                <th data-priority="6" class="header-row" header-text="ISIN">ISIN</th>
+              </tr>
+            </thead>
+            <thead>
+              <tr>
+                <th class="header-row" header-text=""></th>
+                <th>Time</th>
+                <th>Code</th>
+                <th>Title</th>
+                <th>Name</th>
+                <th>ISIN</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="6">Loading data from server</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="tab-pane fade" id="market-notices" role="tabpanel" aria-labelledby="market-notices-tab">
+      <div class="container-fluid">
+        <div class="table-responsive">
+          <table class="table table-striped table-hover table-bordered table-sm" id="MktNoticeMsgTbl" style="width: 100%;">
+            <thead class="table-dark">
+              <tr>
+                <th data-priority="1" class="header-row" header-text=""></th>
+                <th data-priority="3" class="header-row" header-text="Time Published">Time Published</th>
+                <th data-priority="2" class="header-row" header-text="Title">Title</th>
+              </tr>
+            </thead>
+            <thead>
+              <tr>
+                <th class="header-row" header-text=""></th>
+                <th>Time</th>
+                <th>Title</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="3">Loading data from server</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+  <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
+  <script type="text/javascript" charset="utf8" src="https://cdn.jsdelivr.net/npm/pdfobject@2.2.5/pdfobject.min.js"></script>
+</body>
+
+<div class="modal fade" id="modalNewsDetail" tabindex="-1" role="dialog" aria-labelledby="modalNewsDetailTitle" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen-lg-down modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalNewsDetailTitle"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="modalNewsDetailContent">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="modalNewsFile" tabindex="-1" role="dialog" aria-labelledby="modalNewsFileTitle" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen-lg-down modal-xl" role="document" style="height: 100%;">
+    <div class="modal-content" style="height: 100%;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalNewsFileTitle"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="modalNewsFileContent" style="height: 100%;">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  reloader = null;
+  $(document).ready(function(){
+    clearInterval(reloader);
+    load_tables();
+    $('.newsTbl').click(function(event_ref){
+      event_ref.preventDefault();
+      var news_id = $(this).attr('id');
+      var cachebuster = Math.round(new Date().getTime() / 1000);
+      $.get( "/news/news-ajax-msg"+ '?_=' + cachebuster + '&news_id=' + news_id, function( data ) {
+       $('#NewsMsgDataTitle').html('Message Detail - '+news_id);
+       $( "#News_message_data" ).html( '<pre>'+data+'</pre>' );
+     });
+      $('.news-row').removeClass('bg-primary');
+      $('#'+$(this).attr('row-id')).addClass('bg-primary');
+    });
+    $('#news_message_view').on('hidden.bs.modal', function () {
+      $('.news-row').removeClass('bg-primary');
+    })
+
+    $('#NewsMsgTbl tbody').on('click', '.newsDetailView', function(event_ref) {
+      $( "#modalNewsDetailContent" ).html("Loading...");
+      event_ref.preventDefault();
+      var newsRef = $(this).attr('newsRef');
+      var newsTitle = $(this).attr('newsTitle');
+      var newsCode = $(this).attr('newsCode');
+      var cachebuster = Math.round(new Date().getTime() / 1000);
+      $.get( "/news/news-detail"+ '?_=' + cachebuster + '&newsRef=' + newsRef, function( data ) {
+        $('#modalNewsDetailTitle').html(newsCode + " - " + newsTitle);
+        $( "#modalNewsDetailContent" ).html( '<pre>'+data+'</pre>' );
+        $('#modalNewsDetail').modal('show');
+      });
+    });
+    $('#NewsMsgTbl tbody').on('click', '.newsFileView', function(event_ref) {
+      $( "#modalNewsFileContent" ).html("Loading...");
+      event_ref.preventDefault();
+      var newsRef = $(this).attr('newsRef');
+      var newsTitle = $(this).attr('newsTitle');
+      var newsCode = $(this).attr('newsCode');
+      var cachebuster = Math.round(new Date().getTime() / 1000);
+      var url = '/news/news-file?_=' + cachebuster + '&newsRef=' + newsRef;
+      PDFObject.embed(url, '#modalNewsFileContent');
+      $('#modalNewsFileTitle').html(newsCode + " - " + newsTitle);
+      $('#modalNewsFile').modal('show');
+    });
+
+    $('#MktNoticeMsgTbl tbody').on('click', '.newsDetailView', function(event_ref) {
+      $( "#modalNewsDetailContent" ).html("Loading...");
+      event_ref.preventDefault();
+      var newsRef = $(this).attr('newsRef');
+      var newsTitle = $(this).attr('newsTitle');
+      var newsCode = $(this).attr('newsCode');
+      var cachebuster = Math.round(new Date().getTime() / 1000);
+      $.get( "/news/news-detail"+ '?_=' + cachebuster + '&newsRef=' + newsRef, function( data ) {
+        $('#modalNewsDetailTitle').html(newsCode + " - " + newsTitle);
+        $( "#modalNewsDetailContent" ).html( '<pre>'+data+'</pre>' );
+        $('#modalNewsDetail').modal('show');
+      });
+    });
+    $('#MktNoticeMsgTbl tbody').on('click', '.newsFileView', function(event_ref) {
+      $( "#modalNewsFileContent" ).html("Loading...");
+      event_ref.preventDefault();
+      var newsRef = $(this).attr('newsRef');
+      var newsTitle = $(this).attr('newsTitle');
+      var newsCode = $(this).attr('newsCode');
+      var cachebuster = Math.round(new Date().getTime() / 1000);
+      var url = '/news/news-file?_=' + cachebuster + '&newsRef=' + newsRef;
+      PDFObject.embed(url, '#modalNewsFileContent');
+      $('#modalNewsFileTitle').html(newsCode + " - " + newsTitle);
+      $('#modalNewsFile').modal('show');
+    });
+
+    $(document).on('show.bs.modal', '.modal', function (event) {
+      var zIndex = 1040 + (10 * $('.modal:visible').length);
+      $(this).css('z-index', zIndex);
+      setTimeout(function() {
+        $('.modal-backdrop').not('.modal-stack').css('z-index', zIndex - 1).addClass('modal-stack');
+      }, 0);
+    });
+  });
+
+  function format_text(){
+    $('.header-row').each(function(){
+      var html = $(this).attr('header-text');
+      $(this).html(html);
+    });
+  }
+
+  function getParameterByNameNews(name, url) {
+    if (!url) url = window.parent.location.href;
+    console.log('URL = '+url);
+    console.log('Href = '+window.location.href);
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+  }
+
+  function tab_switch(){
+    var table = $('#NewsMsgTbl').DataTable();
+    console.log(table.data().count())
+    if (table.data().count() == 0){
+      var articleID = getParameterByNameNews("article");
+      if (articleID) {
+        var newsSelector = document.querySelector('#market-notices-tab');
+        var tab = new bootstrap.Tab(newsSelector);
+        tab.show();
+        $('#btnFilterClear').show();
+      }
+    }
+  }
+
+  function load_tables(){
+    $('#NewsMsgTbl').dataTable( {
+      'responsive': true,
+      'destroy': true,
+      'fixedHeader': true,
+      "bProcessing": true,
+      "bServerSide": true,
+      "sAjaxSource": "/news/ajax-news-paginated/sec",
+      "lengthMenu": [[15, 250, 500, 0], [15, 250, 500, "All"]],
+      "lengthChange": true,
+      "order": [[ 1, "desc"]],
+      "dom": 'lBrtip',
+      'buttons': [
+      {
+        'extend': 'csvHtml5',
+        'title': 'A2XPublicationExport'
+      },
+      {
+        'extend': 'excelHtml5',
+        'title': 'A2XPublicationExport'
+      },
+      {
+        'extend': 'pdfHtml5',
+        'title': 'A2XPublicationExport'
+      }
+      ],
+      "aoColumnDefs": [{
+        "targets": 0,
+        "data": null,
+        "width": "30px",
+        "mRender": function(data, type, full) {
+          var res = '';
+                        // Check for text
+          if (full[7] == 1){
+            res += '<a href="#" class="btn btn-dark btn-sm newsFileView" newsRef="'+full[0]+'" newsCode="'+full[2]+'" newsTitle="'+full[3]+'" data-bs-toggle="modal" data-bs-target="#modalNewsFile" row-id="parent-'+full[0]+'"><i class="far fa-file-pdf"></i></a>';
+          }
+          else{
+            if (full[6] == 1){
+              res += '<a href="#" class="btn btn-dark btn-sm newsDetailView" newsRef="'+full[0]+'" newsCode="'+full[2]+'" newsTitle="'+full[3]+'" data-bs-toggle="modal" data-bs-target="#modalNewsDetail" row-id="parent-'+full[0]+'"><i class="fas fa-file-alt"></i></a>';
+            }
+            else{
+              res += '&nbsp;'
+            }
+          }
+          return res;
+        }
+      },{
+        "targets": 2,
+        "data": null,
+        "width": "30px",
+        "mRender": function(data, type, full) {
+          var res = '';
+                        // Check for Company URL
+          if (full[8] != ""){
+            res += '<a href="'+full[8]+'" target="_blank">'+full[2]+'</a>';
+          }
+          else{
+            res = full[2]
+          }
+          return res;
+        }}],
+      "drawCallback": function( settings ) {
+       format_text();
+       tab_switch();
+     }
+   });
+    $('#NewsMsgTbl tr:eq(1) th').each( function () {
+      var title = $(this).text();
+      if (title != ""){
+        $(this).html( '<input type="text" placeholder="Search '+title+'" class="column_search"/>' );
+      }
+    });
+    $('.column_search').each(function(){
+      $(this).attr('size', $(this).attr('placeholder').length);
+    });
+    var table = $('#NewsMsgTbl').DataTable();
+    $( '#NewsMsgTbl thead'  ).on( 'keyup', ".column_search",function () {
+      table
+      .column( $(this).parent().index() )
+      .search( this.value )
+      .draw();
+    } );
+
+    $('#MktNoticeMsgTbl').dataTable( {
+      'responsive': true,
+      'destroy': true,
+      'fixedHeader': true,
+      "bProcessing": true,
+      "bServerSide": true,
+      "sAjaxSource": "/news/ajax-news-paginated/mkt",
+      "lengthMenu": [[15, 250, 500, 0], [15, 250, 500, "All"]],
+      "lengthChange": true,
+      "order": [[ 1, "desc"]],
+      "dom": 'lBrtip',
+      'buttons': [
+      {
+        'extend': 'csvHtml5',
+        'title': 'ProblemInstrumentsExport'
+      },
+      {
+        'extend': 'excelHtml5',
+        'title': 'ProblemInstrumentsExport'
+      },
+      {
+        'extend': 'pdfHtml5',
+        'title': 'ProblemInstrumentsExport'
+      }
+      ],
+      "aoColumnDefs": [{
+        "targets": 0,
+        "data": null,
+        "width": "30px",
+        "mRender": function(data, type, full) {
+          var res = '';
+                        // Check for text
+          if (full[4] == 1){
+            res += '<a href="#" class="btn btn-dark btn-sm newsFileView" newsRef="'+full[0]+'" newsCode="A2X Notice" newsTitle="'+full[2]+'" data-bs-toggle="modal" data-bs-target="#modalNewsFile" row-id="parent-'+full[0]+'"><i class="far fa-file-pdf"></i></a>';
+          }
+          else{
+            if (full[3] == 1){
+              res += '<a href="#" class="btn btn-dark btn-sm newsDetailView" newsRef="'+full[0]+'" newsCode="A2X Notice" newsTitle="'+full[2]+'" data-bs-toggle="modal" data-bs-target="#modalNewsDetail" row-id="parent-'+full[0]+'"><i class="fas fa-file-alt"></i></a>';
+            }
+            else{
+              res += '&nbsp;'
+            }
+          }
+          return res;
+        }
+      }],
+      "drawCallback": function( settings ) {
+       format_text();
+     }
+   });
+    $('#MktNoticeMsgTbl tr:eq(1) th').each( function () {
+      var title = $(this).text();
+      if (title != ""){
+        $(this).html( '<input type="text" placeholder="Search '+title+'" class="column_search"/>' );
+      }
+    });
+    $('.column_search').each(function(){
+      $(this).attr('size', $(this).attr('placeholder').length);
+    });
+    var table2 = $('#MktNoticeMsgTbl').DataTable();
+    $( '#MktNoticeMsgTbl thead'  ).on( 'keyup', ".column_search",function () {
+      table2
+      .column( $(this).parent().index() )
+      .search( this.value )
+      .draw();
+    } );
+
+    var articleID = getParameterByNameNews("article");
+    if (articleID) {
+      table.columns(0).search(articleID).draw();
+      table2.columns(0).search(articleID).draw();
+    }
+    else{
+      $('#btnFilterClear').hide();
+      var secCode = getParameterByNameNews("security", window.location.href);
+      console.log('News security code = '+secCode);
+      if (secCode) {
+        table.columns(2).search(secCode).draw();
+        $('#btnFilterClear').show();
+      }
+      else{
+        $('#btnFilterClear').hide();
+      }
+    }
+    $('#btnFilterClear').click(function(){
+      table.columns(2).search('').draw();
+      table.columns(0).search('').draw();
+      table2.columns(0).search('').draw();
+      $('#btnFilterClear').hide();
+    });
+    clearInterval(reloader);
+    reloader = setInterval( function () {
+                table.ajax.reload( null, false ); // user paging is not reset on reload
+                table2.ajax.reload( null, false ); // user paging is not reset on reload
+              }, 90000 );
+  }
+</script>
+
+<!-- Default Statcounter code for A2X Markets https://www.a2x.co.za -->
+<script type="text/javascript">
+  var sc_project=11605091;
+  var sc_invisible=1;
+  var sc_security="0f674f5c";
+</script>
+<script type="text/javascript" src="https://www.statcounter.com/counter/counter.js" async></script>
+<noscript><div class="statcounter"><a title="Web Analytics"
+  href="https://statcounter.com/" target="_blank"><img
+  class="statcounter"
+  src="//c.statcounter.com/11605091/0/0f674f5c/1/" alt="Web
+  Analytics"></a></div></noscript>
+<!-- End of Statcounter Code -->
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129587476-3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ { dataLayer.push(arguments); } }
+  gtag('js', new Date());
+  gtag('config', 'UA-129587476-3');
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CW3TQD30G7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-CW3TQD30G7');
+</script>
+
+</html>
